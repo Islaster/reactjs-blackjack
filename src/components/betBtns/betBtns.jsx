@@ -10,29 +10,29 @@ export default function BetBtns({ btns }) {
 
   const betLookup = {
     50: {
-      "fn": () => pot.set(pot.value + (50 * 2)),
-      "value": 50,
-      "disabled": false,
+      fn: () => pot.set(pot.value + 50 * 2),
+      value: 50,
+      disabled: false,
     },
     100: {
-      "fn": () => pot.set(pot.value + (100 * 2)),
-      "value": 100,
-      "disabled": false,
+      fn: () => pot.set(pot.value + 100 * 2),
+      value: 100,
+      disabled: false,
     },
     500: {
-      "fn": () => pot.set(pot.value + (500 * 2)),
-      "value": 500,
-      "disabled": false,
+      fn: () => pot.set(pot.value + 500 * 2),
+      value: 500,
+      disabled: false,
     },
     1000: {
-      "fn": () => pot.set(pot.value + (1000 * 2)),
-      "value": 1000,
-      "disabled": false,
+      fn: () => pot.set(pot.value + 1000 * 2),
+      value: 1000,
+      disabled: false,
     },
-    "custom btn": {"fn":() => setBtn(true)},
+    "custom btn": { fn: () => setBtn(true) },
     custom: {
-      "fn": () => pot.set(pot.value + (parseInt(bet) * 2)),
-      "value": parseInt(bet),
+      fn: () => pot.set(pot.value + parseInt(bet) * 2),
+      value: parseInt(bet),
     },
   };
 
@@ -43,7 +43,7 @@ export default function BetBtns({ btns }) {
           betLookup[key].disabled = true;
         }
         if (betLookup[key].value > player.money) {
-          betLookup[key].disabled = true
+          betLookup[key].disabled = true;
         }
       }
     }
@@ -56,11 +56,11 @@ export default function BetBtns({ btns }) {
         playerMoney.set(player.money);
       } else if (name === "custom") {
         player.money -= bet;
-        playerMoney.set(player.money)
+        playerMoney.set(player.money);
       }
       betLookup[name].fn();
     } else if (name === "All in") {
-      pot.set(pot.value + (player.money)*2);
+      pot.set(pot.value + player.money * 2);
       player.money -= player.money;
       playerMoney.set(player.money);
     }
@@ -77,23 +77,63 @@ export default function BetBtns({ btns }) {
   };
   console.log(btn);
   return (
-    <div className="btns">
-      <button onClick={() => handleClick(50)} disabled={betLookup[50].disabled}>50</button>
-      <button onClick={() => handleClick(100)} disabled={betLookup[100].disabled}>100</button>
-      <button onClick={() => handleClick(500)} disabled={betLookup[500].disabled}>500</button>
-      <button onClick={() => handleClick(1000)} disabled={betLookup[1000].disabled}>1000</button>
-      <button onClick={() => handleClick("All in")}>All in</button>
+    <div className="btns grid grid-cols-2 gap-4">
+      <button
+        className="bg-emeraldGreen text-richBlack py-2 px-4 rounded-lg shadow-md hover:bg-gold transition-all"
+        onClick={() => handleClick(50)}
+        disabled={betLookup[50].disabled}
+      >
+        50
+      </button>
+      <button
+        className="bg-emeraldGreen text-richBlack py-2 px-4 rounded-lg shadow-md hover:bg-gold transition-all"
+        onClick={() => handleClick(100)}
+        disabled={betLookup[100].disabled}
+      >
+        100
+      </button>
+      <button
+        className="bg-emeraldGreen text-richBlack py-2 px-4 rounded-lg shadow-md hover:bg-gold transition-all"
+        onClick={() => handleClick(500)}
+        disabled={betLookup[500].disabled}
+      >
+        500
+      </button>
+      <button
+        className="bg-emeraldGreen text-richBlack py-2 px-4 rounded-lg shadow-md hover:bg-gold transition-all"
+        onClick={() => handleClick(1000)}
+        disabled={betLookup[1000].disabled}
+      >
+        1000
+      </button>
+      <button
+        className="bg-burntOrange text-white py-2 px-6 rounded-full shadow-lg hover:bg-gold transition-all"
+        onClick={() => handleClick("All in")}
+      >
+        All in
+      </button>
       {btn ? (
         <>
           <input
-            placeholder="enter bet in increments of 5"
+            className="py-2 px-4 border border-silver rounded-lg"
+            placeholder="Enter bet in increments of 5"
             type="number"
             onChange={handleChange}
           />
-          <button onClick={() => handleClick("custom")}>bet</button>
+          <button
+            className="bg-royalPurple text-white py-2 px-4 rounded-lg shadow-md hover:bg-gold transition-all"
+            onClick={() => handleClick("custom")}
+          >
+            Bet
+          </button>
         </>
       ) : (
-        <button onClick={() => handleClick("custom btn")}>Custom</button>
+        <button
+          className="bg-royalPurple text-white py-2 px-6 rounded-full shadow-lg hover:bg-gold transition-all"
+          onClick={() => handleClick("custom btn")}
+        >
+          Custom
+        </button>
       )}
     </div>
   );

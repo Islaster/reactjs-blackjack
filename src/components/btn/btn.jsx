@@ -4,21 +4,29 @@ import { potWinnings } from "../../utility/calculationFunctionality";
 import { dealerLogic } from "../characters/dealer";
 import { useEffect } from "react";
 
-export default function Btn({
-  type,
-  mainBtns,
-}) {
-  const { player, dealer, playerHand, dealerHand, playerMoney, newRound } = useBlackJackContext();
-  const { deck, standBtn, betBtn, hitBtn, pot, lossCount, winCount, drawCount, turnCount } = useGameContext();
+export default function Btn({ type, mainBtns }) {
+  const { player, dealer, playerHand, dealerHand, playerMoney, newRound } =
+    useBlackJackContext();
+  const {
+    deck,
+    standBtn,
+    betBtn,
+    hitBtn,
+    pot,
+    lossCount,
+    winCount,
+    drawCount,
+    turnCount,
+  } = useGameContext();
   const newDeck = deck?.value;
 
   // Determine if the button should be disabled
   let disabled = false;
-  if (type === 'hit') {
+  if (type === "hit") {
     disabled = hitBtn.value;
-  } else if (type === 'stand') {
+  } else if (type === "stand") {
     disabled = standBtn.value;
-  } else if (type === 'bet') {
+  } else if (type === "bet") {
     disabled = betBtn.value;
   }
 
@@ -34,31 +42,35 @@ export default function Btn({
   const btnLookup = {
     // Show bet options
     bet: () => mainBtns.set(false),
-    
+
     // Add card to player's hand
     hit: () => {
       const card = newDeck.pop();
       player?.drawCard(card);
       playerHand.set([...player.hand]);
     },
-    
+
     // Initiate dealer's turn and calculate pot winnings
     stand: () => {
       dealer.hand[0].facedown = false;
       dealerHand.set(dealer.hand);
       dealerLogic(dealer, deck.value);
-      console.log("dealer logic called")
+      console.log("dealer logic called");
       setTimeout(() => {
-        const result = potWinnings(pot, [player, dealer], [{ name: 'Player', "set": playerMoney }]);
-        if (result[0].name === 'dealer' && result.length === 1) {
-          lossCount.set(lossCount.value + 1)
-        } else if (result[0].name === 'player' && result.length === 1) {
-          winCount.set(winCount.value + 1); 
+        const result = potWinnings(
+          pot,
+          [player, dealer],
+          [{ name: "Player", set: playerMoney }]
+        );
+        if (result[0].name === "dealer" && result.length === 1) {
+          lossCount.set(lossCount.value + 1);
+        } else if (result[0].name === "player" && result.length === 1) {
+          winCount.set(winCount.value + 1);
         } else if (result.length === 2) {
           drawCount.set(drawCount.value + 1);
         }
-      }, 500)
-      newRound(pot, deck, turnCount)
+      }, 500);
+      newRound(pot, deck, turnCount);
     },
   };
 
@@ -71,9 +83,15 @@ export default function Btn({
 
   return (
     <button
-      disabled={!disabled}
-      className="btn"
-      onClick={handleClick} // Only trigger onClick here, not during render
+      disabled={!disabled} // Controls whether the button is clickable
+      className={`btn py-2 px-4 rounded-lg font-semibold shadow-md transition-all duration-300
+        ${
+          disabled
+            ? "bg-emeraldGreen text-richBlack hover:bg-gold hover:text-black"
+            : "bg-gray-400 text-gray-700 cursor-not-allowed"
+        }
+      `}
+      onClick={handleClick}
     >
       {type}
     </button>
