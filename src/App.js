@@ -6,7 +6,7 @@ import TournBlackjack from "./modes/tournamentBlackjack";
 import BattleTournBlackjack from "./modes/BattleTournamentBlackjack";
 import "./css/card-deck-css/css/cardstarter.css";
 import { GameProvider } from "./context/gameContext";
-import { BlackjackProvider } from "./context/blackjackContext";
+import { NPCProvider } from "./context/npcContext";
 
 function App() {
   //DOM variables
@@ -15,6 +15,7 @@ function App() {
     [gameBattleStart, setGameBattleStart] = useState(false),
     [tournStart, setTournStart] = useState(false),
     [tournBattleStart, setTournBattleStart] = useState(false);
+  const [deck, setDeck] = useState([]);
   /*Render Game Menu
     if play is clicked trigger difficulty choice and rule choice default blackjack game
     if tournament is clicked trigger choice between casino tournament and amateur rules, tournament has 4 rival NPCs
@@ -43,11 +44,11 @@ function App() {
           setTournBattleStart={setTournBattleStart}
         />
       )}
-      <GameProvider>
-        <BlackjackProvider>
-          {gameStart && renderGame("blackjack")}
-        </BlackjackProvider>
-        {gameBattleStart && renderGame("battle blackjack")}
+      <GameProvider deck={deck} setDeck={setDeck}>
+        {gameStart && renderGame("blackjack")}
+        <NPCProvider deck={deck}>
+          {gameBattleStart && renderGame("battle blackjack")}
+        </NPCProvider>
         {tournStart && <TournBlackjack />}
         {tournBattleStart && <BattleTournBlackjack />}
       </GameProvider>

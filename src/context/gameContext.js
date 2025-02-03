@@ -1,36 +1,139 @@
 import { createContext, useContext, useState, useRef } from "react";
-
+import { Player } from "../models/Player";
+import { Dealer } from "../models/Dealer";
 import { getNewShuffledDeck } from "../utility/Deck";
 
 const GameContext = createContext();
 
-export const GameProvider = ({ children }) => {
-  const [deck, setDeck] = useState(getNewShuffledDeck()),
-    [pot, setPot] = useState(0),
-    [turnCount, setTurnCount] = useState(1),
-    [lose, setLose] = useState(false),
-    [win, setWin] = useState(false),
-    [draw, setDraw] = useState(false),
-    [standBtn, setStandBtn] = useState(false),
-    [betBtn, setBetBtn] = useState(true),
-    [hitBtn, setHitBtn] = useState(false),
-    [winCount, setWinCount] = useState(0),
-    [lossCount, setLossCount] = useState(0),
-    [drawCount, setDrawCount] = useState(0);
+export const GameProvider = ({ deck, setDeck, children }) => {
+  const [gameState, setGameState] = useState({
+    deck: [],
+    pot: 0,
+    turnCount: 1,
+    lose: false,
+    win: false,
+    draw: false,
+    standBtn: false,
+    betBtn: true,
+    hitBtn: false,
+    mainBtns: true,
+    winCount: 0,
+    lossCount: 0,
+    drawCount: 0,
+    playerHand: [],
+    playerMoney: 0,
+    dealerHand: [],
+  });
+
+  const dealerNames = [
+    "Ace",
+    "Maverick",
+    "Scarlet",
+    "Rogue",
+    "Vega",
+    "Blaze",
+    "Ivory",
+    "Cypress",
+    "Jade",
+    "Sterling",
+  ];
+
+  const updateGameState = (key, value) => {
+    setGameState((prev) => ({
+      ...prev,
+      [key]: typeof prev[key] === "number" ? prev[key] + value : value,
+    }));
+  };
+
+  const randomDealer = Math.floor(Math.random() * dealerNames.length);
+
+  const player = useRef(
+    new Player("John", 2000, (hand) => updateGameState("playerHand", hand))
+  ).current;
+  const dealer = useRef(
+    new Dealer(dealerNames[randomDealer], (hand) =>
+      updateGameState("dealerHand", hand)
+    )
+  ).current;
+
+  const newGame = (player, dealer, ...npcs) => {
+    const newDeck = getNewShuffledDeck();
+    const playerLookup = npcs ? [player, dealer, ...npcs] : [player, dealer];
+    playerLookup.forEach((player) => {
+      player.emptyHand();
+      player.drawCard(newDeck.shift());
+      if (player.name !== "John") {
+        const newCard = { ...newDeck.shift(), faceDown: true };
+        player.drawCard(newCard);
+      } else {
+        player.drawCard(newDeck.shift());
+      }
+      if (player.difficulty) {
+        switch (player.difficulty) {
+          case "easy":
+            player.money = 1000;
+            break;
+          case "medium":
+            player.money = 1500;
+            break;
+          case "hard":
+            player.money = 2000;
+            break;
+          default:
+            player.money = 2000;
+            break;
+        }
+      }
+    });
+    setDeck([...newDeck]);
+    setGameState((prev) => ({ ...prev, ["pot"]: 0 }));
+    setGameState((prev) => ({ ...prev, ["turnCount"]: 1 }));
+  };
+
+  const newRound = (player, dealer, state, ...npcs) => {
+    //Start new round
+    const newDeck = getNewShuffledDeck();
+    const playerLookup = npcs ? [player, dealer, ...npcs] : [player, dealer];
+
+    playerLookup.forEach((player) => {
+      //if player exists
+      if (player) {
+        player.emptyHand();
+        //if player has no money don't give them cards or is not the dealer
+        if (player.money > 0 || player instanceof Dealer) {
+          player.drawCard(newDeck.shift());
+          if (player.name !== "John") {
+            const newCard = { ...newDeck.shift(), faceDown: true };
+            player.drawCard(newCard);
+          } else {
+            player.drawCard(newDeck.shift());
+          }
+        }
+      }
+
+      setDeck([...newDeck]);
+      setGameState((prev) => ({ ...prev, ["pot"]: 0 }));
+      updateGameState("turnCount: ", 1);
+    });
+  };
+
+  const endGame = (onBtnsUpdate, animationUpdate) => {
+    //End game animation
+
+    //Change buttons e.g. main menu, new game, mode menu
+    onBtnsUpdate(["Main Menu", "Mode Menu", "New Game"]);
+  };
 
   const value = {
-    deck: { value: deck, set: setDeck },
-    pot: { value: pot, set: setPot },
-    turnCount: { value: turnCount, set: setTurnCount },
-    standBtn: { value: standBtn, set: setStandBtn },
-    hitBtn: { value: hitBtn, set: setHitBtn },
-    betBtn: { value: betBtn, set: setBetBtn },
-    lose: { value: lose, set: setLose },
-    draw: { value: draw, set: setDraw },
-    win: { value: win, set: setWin },
-    winCount: { value: winCount, set: setWinCount },
-    drawCount: { value: drawCount, set: setDrawCount },
-    lossCount: { value: lossCount, set: setLossCount },
+    newGame,
+    newRound,
+    endGame,
+    player,
+    dealer,
+    gameState,
+    deck,
+    setDeck,
+    updateGameState,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

@@ -1,76 +1,102 @@
-import { useBlackJackContext } from "../../context/blackjackContext";
+import { useNPCContext } from "../../context/npcContext";
 import { useGameContext } from "../../context/gameContext";
 import { potWinnings } from "../../utility/calculationFunctionality";
-import { dealerLogic } from "../characters/dealer";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
-export default function Btn({ type, mainBtns }) {
-  const { player, dealer, playerHand, dealerHand, playerMoney, newRound } =
-    useBlackJackContext();
-  const {
-    deck,
-    standBtn,
-    betBtn,
-    hitBtn,
-    pot,
-    lossCount,
-    winCount,
-    drawCount,
-    turnCount,
-  } = useGameContext();
-  const newDeck = deck?.value;
+export default function Btn({ type }) {
+  const { newRound, player, dealer, gameState, updateGameState, deck } =
+    useGameContext();
+  const { npcOne, npcTwo, npcThree, npcState, updateNpcState } =
+    useNPCContext();
+  const newDeck = deck;
+  const battleContext = useNPCContext();
+  const isBattle = useMemo(() => !!battleContext, [battleContext]);
 
   // Determine if the button should be disabled
   let disabled = false;
   if (type === "hit") {
-    disabled = hitBtn.value;
+    disabled = gameState.hitBtn;
   } else if (type === "stand") {
-    disabled = standBtn.value;
+    disabled = gameState.standBtn;
   } else if (type === "bet") {
-    disabled = betBtn.value;
+    disabled = gameState.betBtn;
   }
 
   // Update button states when betBtn.value changes
   useEffect(() => {
-    if (betBtn?.value) {
-      standBtn?.set(false);
-      hitBtn?.set(false);
+    if (gameState.betBtn) {
+      updateGameState("standBtn", false);
+      updateGameState("hitBtn", false);
     }
-  }, [betBtn?.value, standBtn, hitBtn]);
+  }, [gameState.betBtn, gameState.standBtn, gameState.hitBtn]);
 
   // Logic for each button click
   const btnLookup = {
     // Show bet options
-    bet: () => mainBtns.set(false),
+    bet: () => updateGameState("mainBtns", false),
 
     // Add card to player's hand
     hit: () => {
-      const card = newDeck.pop();
+      const card = newDeck.shift();
       player?.drawCard(card);
-      playerHand.set([...player.hand]);
+      updateGameState("playerHand", [...player.hand]);
     },
 
     // Initiate dealer's turn and calculate pot winnings
     stand: () => {
-      dealer.hand[0].facedown = false;
-      dealerHand.set(dealer.hand);
-      dealerLogic(dealer, deck.value);
-      console.log("dealer logic called");
-      setTimeout(() => {
-        const result = potWinnings(
-          pot,
-          [player, dealer],
-          [{ name: "Player", set: playerMoney }]
-        );
-        if (result[0].name === "dealer" && result.length === 1) {
-          lossCount.set(lossCount.value + 1);
-        } else if (result[0].name === "player" && result.length === 1) {
-          winCount.set(winCount.value + 1);
-        } else if (result.length === 2) {
-          drawCount.set(drawCount.value + 1);
+      const npcs = npcOne
+        ? [
+            {
+              npc: dealer,
+              hand: gameState.dealerHand,
+            },
+            { npc: npcOne, hand: gameState.npcOneHand, name: "npcOneHand" },
+            { npc: npcTwo, hand: gameState.npcTwoHand, name: "npcTwoHand" },
+            {
+              npc: npcThree,
+              hand: gameState.npcThreeHand,
+              name: "npcThreeHand",
+            },
+          ]
+        : [
+            {
+              npc: dealer,
+              hand: gameState.dealerHand,
+            },
+          ];
+      npcs.forEach((npc) => {
+        if (npc.npc.hand[1].faceDown) {
+          npc.npc.hand[1].faceDown = false;
         }
-      }, 500);
-      newRound(pot, deck, turnCount);
+        if (npcOne) {
+          console.log(npcOne);
+          updateNpcState(npc.name, npc.npc.hand);
+        }
+        npc.npc.makeDecision(newDeck.shift());
+      });
+      updateGameState("deck", newDeck);
+      if (!isBattle) {
+        updateNpcState("deck", newDeck);
+      }
+      const result = npcOne
+        ? potWinnings(gameState.pot, updateGameState, [
+            { person: player, money: "playerMoney", state: gameState },
+            { person: npcOne, money: "npcOneMoney", state: npcState },
+            { person: npcTwo, money: "npcTwoMoney", state: npcState },
+            { person: npcThree, money: "npcThreeMoney", state: npcState },
+            { person: dealer },
+          ])
+        : potWinnings(gameState.pot, updateGameState, [
+            { person: player, money: "playerMoney", state: gameState },
+            { person: dealer },
+          ]);
+
+      setTimeout(() => {
+        newRound(player, dealer, npcState, npcOne, npcTwo, npcThree);
+      }, 2500);
+      updateGameState("hitBtn", false);
+      updateGameState("standBtn", false);
+      updateGameState("betBtn", true);
     },
   };
 

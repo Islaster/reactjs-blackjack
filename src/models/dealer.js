@@ -5,17 +5,33 @@ export class Dealer {
     this.onHandUpdate = onHandUpdate;
   }
 
-  drawCard(card) {;
+  drawCard(card) {
     this.hand.push(card);
-    this.onHandUpdate([...this.hand])
+    this.onHandUpdate([...this.hand]);
   }
 
   emptyHand() {
     this.hand = [];
-    this.onHandUpdate([])
+    this.onHandUpdate([]);
   }
 
   calculateHand() {
-    return this.hand.reduce((total, card) => total + card.value, 0);
+    const score = this.hand.reduce((total, card) => total + card.value, 0);
+    if (score > 21) {
+      return { value: 0, html: score };
+    } else {
+      return { value: score, html: score };
+    }
+  }
+
+  makeDecision(card) {
+    console.log(this.calculateHand());
+    while (this.calculateHand().value < 17) {
+      console.log(this.calculateHand().value);
+      this.drawCard(card);
+      if (this.calculateHand().value === 0) {
+        break;
+      }
+    }
   }
 }

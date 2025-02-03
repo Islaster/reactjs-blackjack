@@ -11,7 +11,7 @@ describe("Deck manipulation functions in Jest", () => {
     ];
 
     const newDeck = [...initialDeckArray];
-    const poppedCard = newDeck.pop();
+    const poppedCard = newDeck.shift();
 
     // Assertions
     expect(poppedCard).toEqual({ face: "hA", value: 11 });
