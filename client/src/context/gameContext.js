@@ -93,7 +93,9 @@ export const GameProvider = ({ deck, setDeck, children }) => {
   const newRound = (player, dealer, state, ...npcs) => {
     //Start new round
     const newDeck = getNewShuffledDeck();
-    const playerLookup = npcs ? [player, dealer, ...npcs] : [player, dealer];
+    const playerLookup = npcs[0].name
+      ? [player, dealer, ...npcs]
+      : [player, dealer];
 
     playerLookup.forEach((player) => {
       //if player exists

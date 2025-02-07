@@ -9,6 +9,7 @@ export default function GameMenu({
   setGameBattleStart,
   setTournStart,
   setTournBattleStart,
+  leaderboardData,
 }) {
   const [main, setMain] = useState(true);
   const [game, setGame] = useState(false);

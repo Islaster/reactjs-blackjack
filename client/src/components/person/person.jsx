@@ -15,8 +15,6 @@ export default function Person({ name, char }) {
   const isBattle = useMemo(() => !!battleContext, [battleContext]);
 
   let cards, bank, max;
-  console.log(isBattle);
-  console.log(gameState);
   const playerLookup = npcOne
     ? {
         dealer: { hand: gameState.dealerHand, "char-type": dealer },
@@ -51,7 +49,6 @@ export default function Person({ name, char }) {
       setLoss(true);
     }
   }, [gameState.pot]);
-  console.log(playerLookup);
   const score = playerLookup[char]["char-type"].hand[1]?.faceDown
     ? ""
     : playerLookup[char]["char-type"]?.calculateHand();
